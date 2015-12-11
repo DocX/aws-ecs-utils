@@ -2,6 +2,8 @@
 
 Pack of useful CLI commands for working with Amazon AWS Container Service.
 
+![](https://cloud.githubusercontent.com/assets/132277/11748785/e9ca2488-a021-11e5-885f-7d34f4f15036.gif)
+
 ## Installation
 
 1. (Prereq) Install `awscli` (https://aws.amazon.com/cli/) and `jq` (https://stedolan.github.io/jq/)
