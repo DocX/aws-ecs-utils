@@ -1,6 +1,6 @@
 # AWS Container Service (ECS) CLI utils
 
-Pack of CLI commands useful for working with Amazon AWS Container Service.
+Pack of useful CLI commands for working with Amazon AWS Container Service.
 
 ## Installation
 
@@ -14,7 +14,11 @@ Pack of CLI commands useful for working with Amazon AWS Container Service.
 
 ### `ecs-console`
 
-Connect to running container of specific service
+Connect to running container of specific service. 
+
+This is useful to investigate inner state of processes inside container or run processes with available environment variables from task definition.
+
+Warning: Be aware that you are inside container that runs the main process already. Starting heavy processes may cause the whole container will run out of memory and be killed.
 
 ```bash
 ecs-console cluster-name service-name
@@ -22,7 +26,9 @@ ecs-console cluster-name service-name
 
 ### `ecs-task-shell`
 
-Start task and connect to its shell. Stops tasks after shell is exited.
+Start new ECS task with overridden CMD to `sleep 30m` and connect to its shell. Stops tasks after shell is exited.
+
+This is useful to run your app framework console (like `rails console`) within environment of your ECS service or task without affecting containers running services.
 
 ```bash
 ecs-task-shell cluster-name task-definition-name[:version]
