@@ -6,8 +6,7 @@ Pack of useful CLI commands for working with Amazon AWS Container Service.
 
 1. (Prereq) Install `awscli` (https://aws.amazon.com/cli/) and `jq` (https://stedolan.github.io/jq/)
 2. Make sure you have `aws` configured with stored authentication
-4. Download `*.sh` files from this repository
-5. Add them to your `/usr/local/bin`
+4. Download `bin` folder from this repository and copy content to your `/usr/local/bin`
 6. Add path to your ECS PEM file to `ECS_PEM_FILE` environment variable
 
 ## Commands
