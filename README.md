@@ -12,6 +12,10 @@ Pack of useful CLI commands for working with Amazon AWS Container Service.
 
 ## Commands
 
+### Conventions
+
+All commands expect your `aws` command is configured with default AWS region. Also majority of commands expect `ECS_PEM_FILE` ENV variable to be pointing to PEM file for SSH access to ECS cluster hosts.
+
 ### `ecs-console`
 
 Connect to running container of specific service. 
