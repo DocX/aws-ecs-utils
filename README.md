@@ -26,7 +26,7 @@ Start new ECS task with overridden CMD to `sleep 30m` and connect to its shell. 
 ecs-run-shell cluster-name task-definition-name[:version]
 ```
 
-This is useful to run your app framework console (like `rails console`) within environment of your ECS service or task without affecting containers running services.
+This is useful to run your app framework console (like `rails console`) within environment and with ENV variables of your ECS service or task while not risking failure of already running containers.
 
 If task definition defines more than 1 container, all of containers are started but it connects you to first one.
 
