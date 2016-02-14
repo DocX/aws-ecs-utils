@@ -1,6 +1,6 @@
 # AWS Container Service (ECS) CLI utils
 
-Pack of useful CLI commands for working with Amazon AWS Container Service.
+Connect to shell of containerized application like you were used to before Docker.
 
 ![](https://cloud.githubusercontent.com/assets/132277/11748785/e9ca2488-a021-11e5-885f-7d34f4f15036.gif)
 
