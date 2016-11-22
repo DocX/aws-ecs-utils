@@ -17,7 +17,7 @@ echo Container Instance: $CONTAINER_INSTANCE_ID
 EC2_INSTANCE=$( aws ecs describe-container-instances --cluster=$CLUSTER --container-instances $CONTAINER_INSTANCE_ID | jq -r '.containerInstances[0].ec2InstanceId' )
 echo EC2 Instance: $EC2_INSTANCE
 
-EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PublicIpAddress' )
+EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
 echo Connecting to: $EC2_IP
 
 CONTAINER_NAME=$( aws ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].containers[0].name' )
@@ -25,6 +25,5 @@ TASK_NAME=$( aws ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r 
 CONTAINER_DOCKER_NAME=ecs-$TASK_NAME-$CONTAINER_NAME
 echo Container name: $CONTAINER_DOCKER_NAME
 
-ssh -i $ECS_PEM_FILE ec2-user@$EC2_IP -t 'bash -c "docker exec -it $( docker ps -a -q -f name='$CONTAINER_DOCKER_NAME' | 
+ssh ubuntu@$EC2_IP -t 'bash -c "docker exec -it $( docker ps -a -q -f name='$CONTAINER_DOCKER_NAME' |
 head -n 1 ) bash"'
-

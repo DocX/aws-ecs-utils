@@ -29,15 +29,14 @@ echo EC2 Instance: $EC2_INSTANCE
 echo Waiting for task to be running...
 aws ecs wait tasks-running --tasks $TASK_ID --cluster $CLUSTER
 
-EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PublicIpAddress' )
+EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
 [ $? = 0 ] || exit 1
-echo SSH-ing to: ec2-user@$EC2_IP
+echo SSH-ing to: ubuntu@$EC2_IP
 
-ssh -i $ECS_PEM_FILE ec2-user@$EC2_IP -t 'bash -c "docker exec -it $( docker ps -a -q -f label=com.amazonaws.ecs.task-arn='$TASK_ID' ) bash"'
+ssh ubuntu@$EC2_IP -t 'bash -c "docker exec -it $( docker ps -a -q -f label=com.amazonaws.ecs.task-arn='$TASK_ID' ) bash"'
 
 echo Stopping task...
 aws ecs stop-task --cluster $CLUSTER --task $TASK_ID >/dev/null
 
 echo Waiting for task to stop...
 aws ecs wait tasks-stopped --tasks $TASK_ID --cluster $CLUSTER
-
