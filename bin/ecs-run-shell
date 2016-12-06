@@ -2,17 +2,22 @@
 
 CLUSTER=$1
 TASK_NAME=$2
+PROFILE=$3
+PROFILE_SELECTOR=" --profile $PROFILE "
+
+if [ -z "$PROFILE" ]; then
+PROFILE_SELECTOR=''
+fi
 
 if [ -z "$CLUSTER" -o -z "$TASK_NAME" ]; then
   echo "Usage:"
   echo "ecs-run-shell cluster-name task-name[:version]"
   exit 1
 fi
-
-CONTAINER_NAME=$( aws ecs describe-task-definition --task $TASK_NAME | jq -r '.taskDefinition.containerDefinitions[0].name' )
+CONTAINER_NAME=$( aws $PROFILE_SELECTOR ecs describe-task-definition --task $TASK_NAME | jq -r '.taskDefinition.containerDefinitions[0].name' )
 echo Task container name: $CONTAINER_NAME
 
-RUNTASK=$( aws ecs run-task --cluster=$CLUSTER --task-definition=$TASK_NAME --overrides $( jq -n -c '.containerOverrides[0] = (.command = ["sleep","30m"] | .name = "'$CONTAINER_NAME'")' ) --started-by "$(aws iam get-user | jq -r '.User.UserName')" )
+RUNTASK=$( aws $PROFILE_SELECTOR ecs run-task --cluster=$CLUSTER --task-definition=$TASK_NAME --overrides $( jq -n -c '.containerOverrides[0] = (.command = ["sleep","30m"] | .name = "'$CONTAINER_NAME'")' ) --started-by "$(aws $PROFILE_SELECTOR iam get-user | jq -r '.User.UserName')" )
 [ $? = 0 ] || exit 1
 
 TASK_ID=$( echo "$RUNTASK" | jq -r '.tasks[0].taskArn' )
@@ -22,21 +27,21 @@ CONTAINER_INSTANCE_ID=$( echo "$RUNTASK" | jq -r '.tasks[0].containerInstanceArn
 [ $? = 0 ] || exit 1
 echo Container Instance: $CONTAINER_INSTANCE_ID
 
-EC2_INSTANCE=$( aws ecs describe-container-instances --cluster=$CLUSTER --container-instances $CONTAINER_INSTANCE_ID | jq -r '.containerInstances[0].ec2InstanceId' )
+EC2_INSTANCE=$( aws $PROFILE_SELECTOR ecs describe-container-instances --cluster=$CLUSTER --container-instances $CONTAINER_INSTANCE_ID | jq -r '.containerInstances[0].ec2InstanceId' )
 [ $? = 0 ] || exit 1
 echo EC2 Instance: $EC2_INSTANCE
 
 echo Waiting for task to be running...
-aws ecs wait tasks-running --tasks $TASK_ID --cluster $CLUSTER
+aws $PROFILE_SELECTOR ecs wait tasks-running --tasks $TASK_ID --cluster $CLUSTER
 
-EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
+EC2_IP=$( aws $PROFILE_SELECTOR ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
 [ $? = 0 ] || exit 1
 echo SSH-ing to: ubuntu@$EC2_IP
 
 ssh ubuntu@$EC2_IP -t 'bash -c "docker exec -it $( docker ps -a -q -f label=com.amazonaws.ecs.task-arn='$TASK_ID' ) bash"'
 
 echo Stopping task...
-aws ecs stop-task --cluster $CLUSTER --task $TASK_ID >/dev/null
+aws $PROFILE_SELECTOR ecs stop-task --cluster $CLUSTER --task $TASK_ID >/dev/null
 
 echo Waiting for task to stop...
-aws ecs wait tasks-stopped --tasks $TASK_ID --cluster $CLUSTER
+aws $PROFILE_SELECTOR ecs wait tasks-stopped --tasks $TASK_ID --cluster $CLUSTER

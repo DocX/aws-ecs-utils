@@ -2,26 +2,32 @@
 
 CLUSTER=$1
 SERVICE=$2
+PROFILE=$3
+PROFILE_SELECTOR=" --profile $PROFILE "
+
+if [ -z "$PROFILE" ]; then
+PROFILE_SELECTOR=''
+fi
 
 if [ -z "$CLUSTER" -o -z "$SERVICE" ]; then
   echo "ecs-connect cluster-name service-name"
   exit 1
 fi
 
-TASK_ID=$( aws ecs list-tasks --cluster=$CLUSTER --service-name=$SERVICE | jq -r '.taskArns[0]' )
+TASK_ID=$( aws $PROFILE_SELECTOR ecs list-tasks --cluster=$CLUSTER --service-name=$SERVICE | jq -r '.taskArns[0]' )
 echo Task ID: $TASK_ID
 
-CONTAINER_INSTANCE_ID=$( aws ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].containerInstanceArn' )
+CONTAINER_INSTANCE_ID=$( aws $PROFILE_SELECTOR ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].containerInstanceArn' )
 echo Container Instance: $CONTAINER_INSTANCE_ID
 
-EC2_INSTANCE=$( aws ecs describe-container-instances --cluster=$CLUSTER --container-instances $CONTAINER_INSTANCE_ID | jq -r '.containerInstances[0].ec2InstanceId' )
+EC2_INSTANCE=$( aws $PROFILE_SELECTOR ecs describe-container-instances --cluster=$CLUSTER --container-instances $CONTAINER_INSTANCE_ID | jq -r '.containerInstances[0].ec2InstanceId' )
 echo EC2 Instance: $EC2_INSTANCE
 
-EC2_IP=$( aws ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
+EC2_IP=$( aws $PROFILE_SELECTOR ec2 describe-instances --instance-ids $EC2_INSTANCE | jq -r '.Reservations[0].Instances[0].PrivateIpAddress' )
 echo Connecting to: $EC2_IP
 
-CONTAINER_NAME=$( aws ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].containers[0].name' )
-TASK_NAME=$( aws ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].taskDefinitionArn' | grep -o '[^/]*$' | sed -e 's/:/-/')
+CONTAINER_NAME=$( aws $PROFILE_SELECTOR ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].containers[0].name' )
+TASK_NAME=$( aws $PROFILE_SELECTOR ecs describe-tasks --cluster=$CLUSTER --tasks $TASK_ID | jq -r '.tasks[0].taskDefinitionArn' | grep -o '[^/]*$' | sed -e 's/:/-/')
 CONTAINER_DOCKER_NAME=ecs-$TASK_NAME-$CONTAINER_NAME
 echo Container name: $CONTAINER_DOCKER_NAME
 
