@@ -11,7 +11,7 @@ fi
 
 if [ -z "$CLUSTER" -o -z "$TASK_NAME" ]; then
   echo "Usage:"
-  echo "ecs-run-shell cluster-name task-name[:version]"
+  echo "ecs-run-shell cluster-name task-name[:version] [aws-profile-name]"
   exit 1
 fi
 CONTAINER_NAME=$( aws $PROFILE_SELECTOR ecs describe-task-definition --task $TASK_NAME | jq -r '.taskDefinition.containerDefinitions[0].name' )
