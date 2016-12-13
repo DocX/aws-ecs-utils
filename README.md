@@ -6,10 +6,10 @@ Connect to shell of containerized application like you were used to before Docke
 
 ## Installation
 
-1. (Prereq) Install `awscli` (https://aws.amazon.com/cli/) and `jq` (https://stedolan.github.io/jq/)
+1. (Prereq) Install `awscli` (<https://aws.amazon.com/cli/>) and `jq` (<https://stedolan.github.io/jq/>)
 2. Make sure you have `aws` configured with stored authentication
-4. Download `bin` folder from this repository and copy content to your `/usr/local/bin`
-6. Add path to your ECS PEM file to `ECS_PEM_FILE` environment variable
+3. Download `bin` folder from this repository and copy content to your `/usr/local/bin`
+4. Add path to your ECS PEM file to `ECS_PEM_FILE` environment variable
 
 ## Commands
 
@@ -17,23 +17,21 @@ Connect to shell of containerized application like you were used to before Docke
 
 All commands expect your `aws` command is configured with default AWS region. Also majority of commands expect `ECS_PEM_FILE` ENV variable to be pointing to PEM file for SSH access to ECS cluster hosts.
 
-
 ### `ecs-run-shell`
 
 Start new ECS task with overridden CMD to `sleep 30m` and connect to its shell. Stops tasks after shell is exited.
 
 ```bash
-ecs-run-shell cluster-name task-definition-name[:version]
+ecs-run-shell cluster-name task-definition-name[:version] [aws-profile-name]
 ```
 
 This is useful to run your app framework console (like `rails console`) within environment and with ENV variables of your ECS service or task while not risking failure of already running containers.
 
 If task definition defines more than 1 container, all of containers are started but it connects you to first one.
 
-
 ### `ecs-connect`
 
-Connect to running container of specific service. 
+Connect to running container of specific service.
 
 ```bash
 ecs-connect cluster-name service-name
